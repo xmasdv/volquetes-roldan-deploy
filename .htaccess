@@ -2,7 +2,7 @@ Options -MultiViews
 
 <IfModule mod_rewrite.c>
   RewriteEngine On
-  RewriteBase /volquetesroldan/
+  RewriteBase /Roldan/
 
   # Never rewrite real files/folders (assets, images, css, js, etc).
   RewriteCond %{REQUEST_FILENAME} -f [OR]
