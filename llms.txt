@@ -11,17 +11,11 @@
 - **Horario de atención:** Lunes a Sábados de 07:00 a 19:00 hs.
 - **Sitio web:** https://volquetesroldan.com/
 
-## Zona de Cobertura Exclusiva (Área de Servicio)
-- **Cobertura activa:** Roldán (Santa Fe) y todas sus urbanizaciones, barrios y loteos:
-  - Tierra de Sueños 1, 2 y 3
-  - Punta Chacra
-  - Las Acequias y Acequias del Aire
-  - Cotos de la Alameda
-  - Las Tardes
-  - El Muelle
-  - Roldán Centro y casco urbano
-  - San Jerónimo Sud (zona rural adyacente)
-- **Zonas sin cobertura (NO atendidas):** No se realizan entregas ni servicios en la ciudad de Funes ni en Rosario.
+## Zona de Cobertura y Operatividad
+- **Alquiler de Volquetes:**
+  - Base y habilitación directa propia en Roldán y todas sus urbanizaciones (Tierra de Sueños 1, 2 y 3, Punta Chacra, Las Acequias, Acequias del Aire, Cotos de la Alameda, Las Tardes, El Muelle, casco urbano y San Jerónimo Sud). En Rosario se atiende mediante red logística coordinada.
+- **Venta de Tierra Negra y Movimiento de Suelos / Maquinaria Bobcat:**
+  - Cobertura regional completa con flota propia: Roldán, Funes, Rosario y localidades en un radio de hasta 30 km a la redonda (Ibarlucea, Zavalla, Ricardone, San Jerónimo Sud). Entrega directa con camiones volcadores propios.
 
 ## Catálogo de Servicios y Productos
 
