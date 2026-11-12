@@ -1,38 +1,52 @@
+Options -Indexes
+DirectoryIndex index.html
+ErrorDocument 404 /404.html
+
 <IfModule mod_rewrite.c>
   RewriteEngine On
-  
-  # Importante: Como el dominio apunta directo aquí, la base es /
   RewriteBase /
-  
-  # Si el archivo o carpeta física existe (assets, imágenes), los carga directamente
+
+  # 1. Force HTTPS + canonical non-www in a single 301 hop
+  RewriteCond %{HTTPS} !=on [OR]
+  RewriteCond %{HTTP_HOST} ^www\.volquetesroldan\.com$ [NC]
+  RewriteRule ^(.*)$ https://volquetesroldan.com/$1 [R=301,L]
+
+  # 2. Permanent single-hop 301 redirects for legacy -funes routes (with or without trailing slash)
+  RewriteRule ^alquiler-volquetes-funes/?$ https://volquetesroldan.com/alquiler-volquetes-roldan [R=301,L]
+  RewriteRule ^tierra-negra-funes/?$ https://volquetesroldan.com/tierra-negra-roldan [R=301,L]
+  RewriteRule ^alquiler-minicargadora-funes/?$ https://volquetesroldan.com/alquiler-minicargadora-roldan [R=301,L]
+  RewriteRule ^alquiler-bobcat-funes/?$ https://volquetesroldan.com/alquiler-bobcat-roldan [R=301,L]
+
+  # 3. Strip trailing slash on virtual routes (except root "" and real directories)
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteRule ^(.+)/$ https://volquetesroldan.com/$1 [R=301,L]
+
+  # 4. Flag PPC routes for server-side X-Robots-Tag: noindex, nofollow
+  RewriteRule ^(volquetes|tierra-negra|limpieza-de-obra|minicargadora|bobcat)$ - [E=PPC_NOINDEX:1]
+
+  # 5. Missing static assets -> real HTTP 404 (never return index.html for missing images/JS/CSS)
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteRule \.(ico|jpe?g|png|gif|svg|webp|avif|woff2?|css|js|mjs|map|xml|txt|mp4|webmanifest)$ - [R=404,L]
+
+  # 6. Existing physical files or directories
   RewriteCond %{REQUEST_FILENAME} -f [OR]
   RewriteCond %{REQUEST_FILENAME} -d
   RewriteRule ^ - [L]
-  # Si la ruta no existe físicamente, la maneja React a través del index.html
-  RewriteRule ^ index.html [L]
-</IfModule>
 
-# LITESPEED CACHE
-<IfModule LiteSpeed>
-  CacheEnable public
-  RewriteEngine On
-  RewriteCond %{REQUEST_METHOD} ^GET|HEAD$
-  RewriteRule .* - [E=Cache-Control:max-age=120]
+  # 7. Serve pre-rendered flat HTML per route (/servicios -> servicios.html) avoiding DirectorySlash loops
+  RewriteCond %{REQUEST_FILENAME}.html -f
+  RewriteRule ^([a-zA-Z0-9_-]+)$ $1.html [L]
+
+  # 8. Unknown routes -> real HTTP 404 served via ErrorDocument 404 /404.html
+  RewriteRule ^ - [R=404,L]
 </IfModule>
 
 # COMPRESIÓN GZIP / DEFLATE
 <IfModule mod_deflate.c>
-  AddOutputFilterByType DEFLATE text/plain
-  AddOutputFilterByType DEFLATE text/html
-  AddOutputFilterByType DEFLATE text/xml
-  AddOutputFilterByType DEFLATE text/css
-  AddOutputFilterByType DEFLATE application/xml
-  AddOutputFilterByType DEFLATE application/xhtml+xml
-  AddOutputFilterByType DEFLATE application/rss+xml
-  AddOutputFilterByType DEFLATE application/javascript
-  AddOutputFilterByType DEFLATE application/x-javascript
-  AddOutputFilterByType DEFLATE image/svg+xml
-  AddOutputFilterByType DEFLATE image/x-icon
+  AddOutputFilterByType DEFLATE text/plain text/html text/xml text/css text/javascript
+  AddOutputFilterByType DEFLATE application/xml application/xhtml+xml application/rss+xml
+  AddOutputFilterByType DEFLATE application/javascript application/x-javascript application/json application/ld+json
+  AddOutputFilterByType DEFLATE image/svg+xml image/x-icon
 </IfModule>
 
 # CACHÉ DE NAVEGADOR
@@ -43,24 +57,37 @@
   ExpiresByType image/gif "access plus 1 year"
   ExpiresByType image/png "access plus 1 year"
   ExpiresByType image/webp "access plus 1 year"
+  ExpiresByType image/avif "access plus 1 year"
   ExpiresByType image/svg+xml "access plus 1 year"
   ExpiresByType image/x-icon "access plus 1 year"
   ExpiresByType font/woff2 "access plus 1 year"
-  ExpiresByType text/css "access plus 1 month"
-  ExpiresByType application/javascript "access plus 1 month"
-  ExpiresByType application/x-javascript "access plus 1 month"
-  ExpiresByType text/html "access plus 1 minute"
+  ExpiresByType text/css "access plus 1 year"
+  ExpiresByType application/javascript "access plus 1 year"
+  ExpiresByType application/x-javascript "access plus 1 year"
+  ExpiresByType text/html "access plus 0 seconds"
   ExpiresDefault "access plus 2 days"
 </IfModule>
 
 <IfModule mod_headers.c>
-  <FilesMatch "\.(ico|jpe?g|png|gif|svg|webp|woff2?)$">
-    Header set Cache-Control "max-age=31536000, public"
+  Header always set X-Robots-Tag "noindex, nofollow" env=PPC_NOINDEX
+  Header always set X-Robots-Tag "noindex, nofollow" env=REDIRECT_PPC_NOINDEX
+  Header always set X-Robots-Tag "noindex, nofollow" env=NOTFOUND_NOINDEX
+  Header always set X-Robots-Tag "noindex, nofollow" env=REDIRECT_NOTFOUND_NOINDEX
+
+  <FilesMatch "^(volquetes|tierra-negra|limpieza-de-obra|minicargadora|bobcat|404)\.html$">
+    Header always set X-Robots-Tag "noindex, nofollow"
   </FilesMatch>
-  <FilesMatch "\.(css|js)$">
-    Header set Cache-Control "max-age=2592000, public"
+
+  Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains" env=HTTPS
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set X-Frame-Options "SAMEORIGIN"
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+  Header always set Permissions-Policy "camera=(), microphone=(), geolocation=()"
+
+  <FilesMatch "\.(ico|jpe?g|png|gif|svg|webp|avif|woff2?|css|js)$">
+    Header set Cache-Control "public, max-age=31536000, immutable"
   </FilesMatch>
   <FilesMatch "\.(html)$">
-    Header set Cache-Control "max-age=60, private, must-revalidate"
+    Header set Cache-Control "no-cache, must-revalidate"
   </FilesMatch>
 </IfModule>
